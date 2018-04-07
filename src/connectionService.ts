@@ -3,10 +3,15 @@ import {Socket} from "socket.io";
 import {Express} from "express";
 import * as http from "http";
 
+interface User {
+    nick: string;
+    socket: Socket;
+}
+
 interface RoomEntry {
     name: string;
     host: Socket;
-    users: Socket[];
+    users: User[];
 }
 
 export class ClientService {
@@ -24,9 +29,9 @@ export class ClientService {
             const roomId = socket.handshake.query['roomId'];
             const nick = socket.handshake.query['nick'];
 
-            if (!roomId || !nick){
+            if (!roomId || !nick) {
                 next(new Error(`Handshake query invalid: ${JSON.stringify(socket.handshake.query)}`));
-            }else{
+            } else {
                 console.log(`a user ${nick} try to connect to room ${roomId}`);
                 next();
             }
@@ -45,7 +50,7 @@ export class ClientService {
                 });
                 console.log(`Room ${nick}(${roomId}) created`)
             } else {
-                room.users = [...room.users, socket];
+                room.users = [...room.users, {nick, socket}];
                 console.log(`${nick} successful connected to room ${room.name}(${roomId})`);
             }
 
@@ -57,4 +62,20 @@ export class ClientService {
 
         io.listen(listenOn);
     }
+
+    getRoom(id: string): RoomDto | {} {
+        const roomEntry = this.rooms.get(id);
+        if(!roomEntry) {
+            return {};
+        }
+        return {
+            name: roomEntry.name,
+            users: roomEntry.users.reduce((acc:{ nick: string }[], item: User) => [...acc, {nick: item.nick}], []),
+        };
+    }
+}
+
+export interface RoomDto {
+    name: string,
+    users: { nick: string }[]
 }
