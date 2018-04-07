@@ -3,6 +3,10 @@ import {Socket} from "socket.io";
 import {Express} from "express";
 import * as http from "http";
 
+export enum EVENTS {
+    MOVE = 'move',
+}
+
 interface User {
     nick: string;
     socket: Socket;
@@ -40,24 +44,23 @@ export class ClientService {
         io.on('connection', async (socket) => {
             const roomId = socket.handshake.query['roomId'];
             const nick = socket.handshake.query['nick'];
-
-            const room = this.rooms.get(roomId);
+            let room = this.rooms.get(roomId);
             if (!room) {
-                this.rooms.set(roomId, {
+                room = {
                     name: nick,
                     host: socket,
                     users: []
-                });
+                };
+                this.rooms.set(roomId, room);
                 console.log(`Room ${nick}(${roomId}) created`)
             } else {
                 room.users = [...room.users, {nick, socket}];
                 console.log(`${nick} successful connected to room ${room.name}(${roomId})`);
             }
 
-            //todo set listeners to socket
-            /*this.socketListenersMap.forEach((fn, eventName) => {
-                socket.on(eventName, fn(characterId));
-            });*/
+            socket.on(EVENTS.MOVE, (data: string) => {
+                room!.host.emit(EVENTS.MOVE, data);
+            });
         });
 
         io.listen(listenOn);

@@ -12,7 +12,7 @@ const app: Express = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(req);
+    // console.log(req);
     next();
 });
 
