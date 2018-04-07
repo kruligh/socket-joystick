@@ -1,3 +1,4 @@
+require('console-stamp')(console, '[HH:MM:ss.l]');
 import * as express from "express";
 import {Express, NextFunction, Request, Response} from "express";
 import * as bodyParser from "body-parser";
