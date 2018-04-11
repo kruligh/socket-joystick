@@ -2,12 +2,9 @@ import {assert} from "chai";
 import {Socket} from "socket.io";
 import {EVENTS, MessageDto, RoomDto} from "../src/connectionService";
 import {shouldThrow} from "../test/helpers";
+import {promisifyRequest} from "./helpers";
 
 const io = require('socket.io-client');
-
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-chai.use(chaiHttp);
 
 const SHA256 = require("crypto-js/sha256");
 
@@ -113,6 +110,13 @@ function connect(query: ConnectionQuery): Promise<Socket> {
     return connectWithPartialQuery(query);
 }
 
+const debugApi = {
+    getRoom: async (id: string): Promise<RoomDto> => {
+        const res = await promisifyRequest('get', `/room/${id}`);
+        return res.body.data as RoomDto;
+    }
+};
+
 function connectWithPartialQuery(query: Partial<ConnectionQuery>): Promise<Socket> {
     return new Promise(function (resolve: Function, reject: Function) {
         const socket = io.connect(SERVER_URL, {query});
@@ -126,15 +130,3 @@ function connectWithPartialQuery(query: Partial<ConnectionQuery>): Promise<Socke
         });
     });
 }
-
-const debugApi = {
-    getRoom: (id: string): Promise<RoomDto> => {
-        return new Promise((resolve: Function, reject: Function) => {
-            chai.request(SERVER_URL)
-                .get(`/room/${id}`)
-                .end((err: any, res: any) => {
-                    resolve(res.body.data);
-                });
-        });
-    }
-};
