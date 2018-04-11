@@ -1,6 +1,6 @@
 import {assert} from "chai";
 import {Socket} from "socket.io";
-import {EVENTS, RoomDto} from "../src/connectionService";
+import {EVENTS, MessageDto, RoomDto} from "../src/connectionService";
 import {shouldThrow} from "../test/helpers";
 
 const io = require('socket.io-client');
@@ -75,9 +75,9 @@ describe('Sending message', () => {
     const hostname = 'yeahbunny room';
     const playerNick = 'Alek';
 
-    let roomId: string;
     let hostSocket: Socket;
     let playerSocket: Socket;
+    let roomId: string;
 
     beforeEach(async () => {
         roomId = createRoomId();
@@ -88,13 +88,15 @@ describe('Sending message', () => {
     });
 
     it('Should send message to host', (done) => {
-        const moveMessage = 'bla bla';
-        hostSocket.on(EVENTS.MOVE, (data: string) => {
-            assert.equal(data, moveMessage);
+        const messageData = 'bla bla';
+        hostSocket.on(EVENTS.MOVE, (rawMessage: string) => {
+            const message: MessageDto = JSON.parse(rawMessage);
+            assert.equal(message.data, messageData);
+            assert.equal(message.nick, playerNick);
             done();
         });
 
-        playerSocket.emit(EVENTS.MOVE, moveMessage);
+        playerSocket.emit(EVENTS.MOVE, messageData);
     });
 });
 

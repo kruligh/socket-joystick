@@ -59,7 +59,8 @@ export class ClientService {
             }
 
             socket.on(EVENTS.MOVE, (data: string) => {
-                room!.host.emit(EVENTS.MOVE, data);
+                const message: MessageDto = {nick, data};
+                room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
             });
         });
 
@@ -81,4 +82,8 @@ export class ClientService {
 export interface RoomDto {
     name: string,
     users: { nick: string }[]
+}
+export interface MessageDto {
+    nick: string,
+    data: string
 }
