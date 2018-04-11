@@ -143,7 +143,7 @@
     <option_androidfire_push_id></option_androidfire_push_id>
     <option_androidfire_scale>-1</option_androidfire_scale>
     <option_androidfire_set_device_id></option_androidfire_set_device_id>
-    <option_androidfire_small_icon_png>Configs\Default\amazonfire\icons\small_icon</option_androidfire_small_icon_png>
+    <option_androidfire_small_icon_png>Configs\Default\amazonfire\icons\small_icon.png</option_androidfire_small_icon_png>
     <option_androidfire_splash_png>Configs\Default\amazonfire\splash.png</option_androidfire_splash_png>
     <option_androidfire_splash_time>0</option_androidfire_splash_time>
     <option_androidfire_support_lib_version>23.1.1</option_androidfire_support_lib_version>
@@ -206,7 +206,7 @@
     <option_androidtv_push_id></option_androidtv_push_id>
     <option_androidtv_scale>-1</option_androidtv_scale>
     <option_androidtv_set_device_id></option_androidtv_set_device_id>
-    <option_androidtv_small_icon_png>Configs\Default\androidtv\icons\small_icon</option_androidtv_small_icon_png>
+    <option_androidtv_small_icon_png>Configs\Default\androidtv\icons\small_icon.png</option_androidtv_small_icon_png>
     <option_androidtv_splash_png>Configs\Default\androidtv\splash.png</option_androidtv_splash_png>
     <option_androidtv_support_lib_version>23.1.1</option_androidtv_support_lib_version>
     <option_androidtv_texture_page>1024</option_androidtv_texture_page>
@@ -236,20 +236,20 @@
     <option_hasloadimage>false</option_hasloadimage>
     <option_helpkey>true</option_helpkey>
     <option_html5_CreationEventOrder>true</option_html5_CreationEventOrder>
-    <option_html5_WebGL>0</option_html5_WebGL>
+    <option_html5_WebGL>2</option_html5_WebGL>
     <option_html5_advertising_enable>0</option_html5_advertising_enable>
     <option_html5_advertising_key></option_html5_advertising_key>
     <option_html5_advertising_type>Supersonic Ads</option_html5_advertising_type>
     <option_html5_allow_fullscreen>True</option_html5_allow_fullscreen>
     <option_html5_alwaysreload>False</option_html5_alwaysreload>
-    <option_html5_browser_title>Created with GameMaker: Studio</option_html5_browser_title>
+    <option_html5_browser_title>WebStick</option_html5_browser_title>
     <option_html5_centergame>False</option_html5_centergame>
     <option_html5_facebook_app_display_name></option_html5_facebook_app_display_name>
     <option_html5_facebook_appid></option_html5_facebook_appid>
     <option_html5_facebook_enable>0</option_html5_facebook_enable>
     <option_html5_flurry_enable>0</option_html5_flurry_enable>
     <option_html5_flurry_id></option_html5_flurry_id>
-    <option_html5_foldername>html5game</option_html5_foldername>
+    <option_html5_foldername>resource</option_html5_foldername>
     <option_html5_generate_spotify_app>0</option_html5_generate_spotify_app>
     <option_html5_google_analytics_enable>0</option_html5_google_analytics_enable>
     <option_html5_google_tracking_id></option_html5_google_tracking_id>
@@ -266,7 +266,7 @@
     <option_html5_splash_png>Configs\Default\html5\splash.png</option_html5_splash_png>
     <option_html5_texture_page>2048</option_html5_texture_page>
     <option_html5_use_test_ads>0</option_html5_use_test_ads>
-    <option_html5_usebuiltinparticles>True</option_html5_usebuiltinparticles>
+    <option_html5_usebuiltinparticles>False</option_html5_usebuiltinparticles>
     <option_html5_usesplash>False</option_html5_usesplash>
     <option_icon>nil</option_icon>
     <option_in_app_purchase_enable>0</option_in_app_purchase_enable>
