@@ -1,4 +1,6 @@
 node_modules
 .idea
-*.js
+src/**/*.js
+test/**/*.js
+testIntegration/**/*.js
 *.log

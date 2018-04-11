@@ -12,5 +12,5 @@ npm start
 in one terminal run 
 npm start
 
-second terminal 
+second terminal
 npm run test:integration

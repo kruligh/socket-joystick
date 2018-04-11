@@ -1,6 +1,6 @@
 import {assert} from "chai";
 import {Socket} from "socket.io";
-import {EVENTS, MessageDto, RoomDto} from "../src/server/connectionService";
+import {EVENTS, MessageDto, RoomDto} from "../src/connectionService";
 import {shouldThrow} from "../test/helpers";
 
 const io = require('socket.io-client');
@@ -131,7 +131,7 @@ const debugApi = {
     getRoom: (id: string): Promise<RoomDto> => {
         return new Promise((resolve: Function, reject: Function) => {
             chai.request(SERVER_URL)
-                .get(`/debug/room/${id}`)
+                .get(`/room/${id}`)
                 .end((err: any, res: any) => {
                     resolve(res.body.data);
                 });
