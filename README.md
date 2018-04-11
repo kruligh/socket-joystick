@@ -1,16 +1,23 @@
 # socket-joystick
 
-Simple node application to handle multiuple clients connected by sockets with shared host.
+Simple node application
+- handles multiple clients connected by sockets with shared host.
+- serves statics
 
 ## run application
-npm install
+```
+yarn install
+npm compile
 npm start
+```
 
 ## run tests
 
 ### integration
-in one terminal run 
-npm start
+in one terminal run application as above
 
-second terminal
+in second terminal
+```
 npm run test:integration
+```
+After that you have to kill test task (ctrl c), it will be improved.
