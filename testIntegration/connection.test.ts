@@ -1,6 +1,6 @@
 import {assert} from "chai";
 import {Socket} from "socket.io";
-import {EVENTS, MessageDto, RoomDto} from "../src/connectionService";
+import {EVENTS, MessageDto, RoomDto} from "../src/server/connectionService";
 import {shouldThrow} from "../test/helpers";
 
 const io = require('socket.io-client');
