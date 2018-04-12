@@ -9,9 +9,15 @@ const SERVER_URL = 'http://localhost:3000';
 
 describe('Statics serving', () => {
     it('Should return index.html', async () => {
-        const res: any = await promisifyRequest('get', '');
-        assert.equal(res.status, 200);
-        assert.equal(res.headers['content-type'], 'text/html; charset=UTF-8');
+        await testIfPathReturnsHTMLWithString('', '<title>WebStick</title>')
+    });
+
+    it('Should return host.html', async () => {
+        await testIfPathReturnsHTMLWithString('/host', '<title>WebStick host</title>')
+    });
+
+    it('Should return client.html', async () => {
+        await testIfPathReturnsHTMLWithString('/client', '<title>WebStick client</title>')
     });
 
     it('Should return not found', async () => {
@@ -19,3 +25,10 @@ describe('Statics serving', () => {
         assert.equal(res.status, 404);
     });
 });
+
+async function testIfPathReturnsHTMLWithString(path: string, query: string) {
+    const res: any = await promisifyRequest('get', path);
+    assert.equal(res.status, 200);
+    assert.equal(res.headers['content-type'], 'text/html; charset=UTF-8');
+    assert.ok((res.text as string).indexOf(query));
+}
