@@ -3,7 +3,7 @@
 	<head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <meta name="viewport" content="width=600">    
+        <meta name="viewport" content="width=600">
 		<title>WebStick client</title>
 
 		<style>
@@ -66,15 +66,38 @@
 	<body>
 		<div class="gm4html5_div_class" id="gm4html5_div_id">
 			<p align="center">
-				<input type="button" value="Button 1" onClick="gmCallback.lines_add('It is working!');">
-                <input type="button" value="Button 2" onClick="gmCallback.lines_add('Me WANT BANANA!');">
-                <input type="button" value="Button 3" onClick="gmCallback.lines_add('Asia WANT BANANA!');">
-				<input type="button" value="Clear Lines" onClick="gmCallback.lines_clear();">
+				<input type="button" value="Button 1" onClick="sendMoveToHost('YEAH BUTTON 1a');">
+                <input type="button" value="Button 2" onClick="sendMoveToHost('Me WANT BANANA!');">
+                <input type="button" value="Button 3" onClick="sendMoveToHost('Asia WANT BANANA!');">
+				<input type="button" value="Clear Lines" onClick="sendMoveToHost('');">
 			</p>
 		</div>
 		<script src="resource/socket.io.js"></script>
 		<script>
-            var socket = io();
+			const nick = 'bede_gral_w_gre_69';
+            const hostname = 'najba'; // typed by user - name of room
+            const password = 'dupa'; // typed by user - password to room
+
+            const SERVER_URL = 'http://localhost:3000';
+            const roomId = hostname + password;
+
+            const socket = io(SERVER_URL, {
+                query: { roomId, nick },
+                reconnection: false, //otherwise its hard to debug
+            });
+
+            socket.on('connect', () => {
+                console.log('connected!!');
+            });
+
+            socket.on('error', (data) => {
+                console.log('err', data);
+            });
+
+            function sendMoveToHost(data) {
+                console.log('sending', data);
+				socket.emit('move', data);
+            }
 		</script>
 	</body>
 </html>

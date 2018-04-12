@@ -84,7 +84,30 @@
         <script>window.onload = GameMaker_Init;</script>
 		<script src="resource/socket.io.js"></script>
 		<script>
-            var socket = io();
+            const hostname = 'najba'; // typed by user - name of room
+			const password = 'dupa'; // typed by user - password to room
+
+            const SERVER_URL = 'http://localhost:3000';
+            const roomId = hostname + password;
+
+            const socket = io(SERVER_URL, {query: {roomId, nick: hostname}});
+
+            socket.on('connect', () => {
+                console.log('connected!!');
+            });
+
+            socket.on('error', (data) => {
+                console.log('err', data);
+            });
+
+            socket.on('clear', (rawMessage) => {
+                console.log(rawMessage);
+            });
+
+            socket.on('move', (rawMessage) => {
+                console.log(rawMessage);
+                gmCallback.lines_add(rawMessage);
+            });
 		</script>
 	</body>
 </html>

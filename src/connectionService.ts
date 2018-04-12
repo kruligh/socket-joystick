@@ -60,6 +60,7 @@ export class ClientService {
 
             socket.on(EVENTS.MOVE, (data: string) => {
                 const message: MessageDto = {nick, data};
+                console.log(message);
                 room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
             });
         });
