@@ -69,7 +69,7 @@
 				<input type="button" value="Button 1" onClick="sendMoveToHost('YEAH BUTTON 1a');">
                 <input type="button" value="Button 2" onClick="sendMoveToHost('Me WANT BANANA!');">
                 <input type="button" value="Button 3" onClick="sendMoveToHost('Asia WANT BANANA!');">
-				<input type="button" value="Clear Lines" onClick="sendMoveToHost('');">
+				<input type="button" value="Clear Lines" onClick="sendClearLinesToHost();">
 			</p>
 		</div>
 		<script src="resource/socket.io.js"></script>
@@ -94,9 +94,17 @@
                 console.log('err', data);
             });
 
-            function sendMoveToHost(data) {
-                console.log('sending', data);
-				socket.emit('move', data);
+            function sendMoveToHost(content) {
+				socket.emit('move', {
+				    type: 'write',
+				    content
+                });
+            }
+
+            function sendClearLinesToHost() {
+                socket.emit('move', {
+                    type: 'clear'
+                });
             }
 		</script>
 	</body>

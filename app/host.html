@@ -100,13 +100,16 @@
                 console.log('err', data);
             });
 
-            socket.on('clear', (rawMessage) => {
-                console.log(rawMessage);
-            });
-
             socket.on('move', (rawMessage) => {
                 console.log(rawMessage);
-                gmCallback.lines_add(rawMessage);
+               	const msg = JSON.parse(rawMessage);
+               	if(msg.data.type === 'write') {
+                    gmCallback.lines_add(rawMessage);
+                } else if (msg.data.type === 'clear') {
+                    gmCallback.lines_clear();
+				} else {
+               	    console.error('uknown message type: ' + msg.data.type);
+				}
             });
 		</script>
 	</body>
