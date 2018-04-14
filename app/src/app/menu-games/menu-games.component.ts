@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {MenuGameEntry} from './MenuGameEntry';
+import {GameService} from '../game/game.service';
 
 @Component({
   selector: 'menu-games',
@@ -10,11 +11,11 @@ export class MenuGamesComponent implements OnInit {
 
   public games: MenuGameEntry[];
 
-  public ngOnInit() {
-    this.games = [
-      {name: 'Web Stick', id: 'WebStick', urlPathName: 'webstick'},
-      {name: 'Web Stick v2', id: 'WebStick', urlPathName: 'webstick'}
-    ];
+  constructor(private gameService: GameService) {
+  }
+
+  public async ngOnInit() {
+    this.games = await this.gameService.getMenuGames();
   }
 
 }

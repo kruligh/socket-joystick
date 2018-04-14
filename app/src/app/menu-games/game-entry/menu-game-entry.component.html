@@ -1,3 +1,6 @@
 <div *ngIf="game">
   {{game.name}}
+  <nav>
+    <a routerLink="/{{game.urlPathName}}">Play</a>
+  </nav>
 </div>

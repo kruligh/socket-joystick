@@ -1,22 +1,11 @@
-import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { AppComponent } from './app.component';
-import {MenuGameEntryComponent} from './menu-games/game-entry/menu-game-entry.component';
-import {MenuGamesComponent} from './menu-games/menu-games.component';
+import {TestBed} from '@angular/core/testing';
+import {initTestBed} from '../test/helpers';
+import {AppComponent} from './app.component';
 
 describe('AppComponent', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [
-        AppComponent,
-        MenuGamesComponent,
-        MenuGameEntryComponent,
-      ],
-      imports: [
-        RouterTestingModule
-      ],
-    }).compileComponents();
-  });
+
+  initTestBed({});
+
   it('should create the app', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;

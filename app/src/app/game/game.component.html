@@ -1,0 +1,7 @@
+<div *ngIf="game">
+  {{game.name}}
+</div>
+<div *ngIf="!game && !error">
+  loading...
+</div>
+<div *ngIf="error">{{error}}</div>

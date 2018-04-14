@@ -1,18 +1,13 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { MenuGamesComponent } from './menu-games.component';
-import {MenuGameEntryComponent} from './game-entry/menu-game-entry.component';
+import {MenuGamesComponent} from './menu-games.component';
+import {initTestBed} from '../../test/helpers';
 
 describe('MenuGamesComponent', () => {
   let component: MenuGamesComponent;
   let fixture: ComponentFixture<MenuGamesComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ MenuGamesComponent, MenuGameEntryComponent ]
-    })
-    .compileComponents();
-  }));
+  initTestBed({});
 
   beforeEach(() => {
     fixture = TestBed.createComponent(MenuGamesComponent);
@@ -20,7 +15,7 @@ describe('MenuGamesComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should create', async () => {
+    await expect(component).toBeTruthy();
   });
 });
