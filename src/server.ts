@@ -6,6 +6,7 @@ import {Express, NextFunction, Request, Response} from "express";
 import * as bodyParser from "body-parser";
 import * as http from "http";
 import {ClientService} from "./connectionService";
+
 const path = require('path');
 
 //todo move this to parms or env or whatever
@@ -37,15 +38,15 @@ app.get('/room/:roomId', (req: Request, res: Response, next: Function) => {
 });
 
 // ----------------- serve statics explicit
-app.get('', function(req, res) {
+app.get('', function (req, res) {
     res.sendFile(`${STATIC_DIR}/index.html`);
 });
 
-app.get('/host', function(req, res) {
+app.get('/host', function (req, res) {
     res.sendFile(`${STATIC_DIR}/host.html`);
 });
 
-app.get('/client', function(req, res) {
+app.get('/client', function (req, res) {
     res.sendFile(`${STATIC_DIR}/client.html`);
 });
 
