@@ -1,4 +1,4 @@
-# socket-joystick
+# socket-joystick-server
 
 Simple node application
 - handles multiple clients connected by sockets with shared host.
@@ -7,8 +7,7 @@ Simple node application
 ## run application
 ```
 yarn install
-npm compile
-npm start
+npm run dev
 ```
 
 ## run tests
