@@ -70,12 +70,12 @@ export class ClientService {
 
     getRoom(id: string): RoomDto | {} {
         const roomEntry = this.rooms.get(id);
-        if(!roomEntry) {
+        if (!roomEntry) {
             return {};
         }
         return {
             name: roomEntry.name,
-            users: roomEntry.users.reduce((acc:{ nick: string }[], item: User) => [...acc, {nick: item.nick}], []),
+            users: roomEntry.users.reduce((acc: { nick: string }[], item: User) => [...acc, {nick: item.nick}], []),
         };
     }
 }
@@ -84,6 +84,7 @@ export interface RoomDto {
     name: string,
     users: { nick: string }[]
 }
+
 export interface MessageDto {
     nick: string,
     data: string
