@@ -13,15 +13,13 @@ class GameServiceMock {
   }
 }
 
-
 describe('GameComponent', () => {
   const gameServiceMock = new GameServiceMock();
 
   let component: GameComponent;
   let fixture: ComponentFixture<GameComponent>;
 
-
-  initTestBed({providers: [{ provide: GameService, useValue: gameServiceMock }]});
+  initTestBed({providers: [{provide: GameService, useValue: gameServiceMock}]});
 
   beforeEach(async () => {
     fixture = TestBed.createComponent(GameComponent);

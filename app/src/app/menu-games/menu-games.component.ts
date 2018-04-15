@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {MenuGameEntry} from './MenuGameEntry';
 import {GameService} from '../game/game.service';
+import {MenuGameEntry} from './MenuGameEntry';
 
 @Component({
   selector: 'menu-games',

@@ -1,5 +1,24 @@
 <div *ngIf="game">
   {{game.name}}
+
+  <div *ngIf="!connected">
+    <div>
+      <input [(ngModel)] = "hostname" placeholder="hostname"/>
+      <input [(ngModel)] = "password" placeholder="password"/>
+      <button (click)="createHost()">Create room</button>
+    </div>
+
+    <div>
+      <input [(ngModel)] = "hostname" placeholder="hostname"/>
+      <input [(ngModel)] = "nick" placeholder="your nick"/>
+      <input [(ngModel)] = "password" placeholder="password"/>
+      <button (click)="joinHost()">Join room</button>
+    </div>
+  </div>
+
+  <div *ngIf="connected">
+    <button (click)="disconnectHost()">exit</button>
+  </div>
 </div>
 <div *ngIf="!game && !error">
   loading...

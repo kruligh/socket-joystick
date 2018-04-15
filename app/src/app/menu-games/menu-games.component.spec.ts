@@ -1,7 +1,6 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-
-import {MenuGamesComponent} from './menu-games.component';
 import {initTestBed} from '../../test/helpers';
+import {MenuGamesComponent} from './menu-games.component';
 
 describe('MenuGamesComponent', () => {
   let component: MenuGamesComponent;
