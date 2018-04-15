@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewChecked, AfterViewInit, Component, ElementRef, HostListener, OnInit} from '@angular/core';
+// tslint:disable no-var-requires
+// const GameMaker: any = require('../../../../assets/resource/WebStick.js');
+
+declare const GameMaker_Init: () => void;
+
+const GM_SCRIPT_SRC = 'assets/games/webstick/WebStick.js';
 
 @Component({
   selector: 'app-webstick-host',
@@ -7,9 +13,17 @@ import { Component, OnInit } from '@angular/core';
 })
 export class WebStickHostComponent implements OnInit {
 
-  constructor() { }
-
-  public ngOnInit() {
+  constructor(private elementRef: ElementRef) {
   }
 
+  public ngOnInit(): void {
+    const GMscript = document.createElement('script');
+    GMscript.type = 'text/javascript';
+    GMscript.src = GM_SCRIPT_SRC;
+    this.elementRef.nativeElement.appendChild(GMscript);
+  }
+
+  public runGame(): void {
+    GameMaker_Init();
+  }
 }

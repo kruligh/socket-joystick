@@ -21,7 +21,7 @@ export class GameComponent implements OnInit {
   private error: string;
   private connected: boolean;
 
-  private injectedComponent: ComponentRef<>;
+  private injectedComponent: ComponentRef<Component>;
 
   constructor(
     private route: ActivatedRoute,
@@ -47,7 +47,6 @@ export class GameComponent implements OnInit {
   }
 
   public createHost(): void {
-    console.log(this.hostname, this.password);
     // todo connect socket
     this.connected = true;
     this.injectComponent(WebStickHostComponent);
@@ -66,7 +65,7 @@ export class GameComponent implements OnInit {
     this.injectedComponent.destroy();
   }
 
-  private injectComponent(componentType: Type<>) {
+  private injectComponent(componentType: Type<any>) {
     if (this.injectedComponent) {
       this.injectedComponent.destroy();
     }
