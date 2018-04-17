@@ -476,7 +476,7 @@ var _73 = {
     _j4: 0,
     _k4: 0,
     _l4: !1,
-    _m4: "assets/resource",
+    _m4: "resources",
     _n4: "Default",
     _o4: 0,
     _p4: !0,
@@ -52853,6 +52853,7 @@ if (window.chrome && window.chrome.app) {
 window.requestAnimFrame = (function () {
   return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (_i_,
                                                                                                                                                                                                _Ib) {
+
     _3H2 = window.setTimeout(_i_, 1000 / 60)
   }
 })();

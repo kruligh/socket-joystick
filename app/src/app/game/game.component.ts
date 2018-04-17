@@ -50,6 +50,8 @@ export class GameComponent implements OnInit {
     // todo connect socket
     this.connected = true;
     this.injectComponent(WebStickHostComponent);
+    const hostComponent = this.injectedComponent.instance as WebStickHostComponent;
+    hostComponent.onMove({payload: {content: 'YEAH BUTTON 1a'}, type: 'message'});
   }
 
   public joinHost(): void {
@@ -57,6 +59,10 @@ export class GameComponent implements OnInit {
     // todo connect socket
     this.connected = true;
     this.injectComponent(WebStickClientComponent);
+    const clientComponent = this.injectedComponent.instance as WebStickClientComponent;
+    clientComponent.onMove.subscribe((data) => {
+      console.log('yeah', data);
+    });
   }
 
   public disconnectHost() {

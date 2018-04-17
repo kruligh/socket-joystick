@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {ApiMethod} from '../web-stick.api';
 
 @Component({
   selector: 'app-webstick-client',
@@ -7,9 +8,19 @@ import { Component, OnInit } from '@angular/core';
 })
 export class WebStickClientComponent implements OnInit {
 
-  constructor() { }
+  @Output() public onMove = new EventEmitter<ApiMethod>();
 
   public ngOnInit() {
   }
 
+  public sendMsg(content: string) {
+    this.onMove.emit({
+      payload: {content},
+      type: 'message'
+    });
+  }
+
+  public sendClear() {
+
+  }
 }
