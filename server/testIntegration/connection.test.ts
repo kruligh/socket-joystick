@@ -85,11 +85,12 @@ describe('Sending message', () => {
     });
 
     it('Should send message to host', (done) => {
-        const messageData = 'bla bla';
+        const messageData = {payload: 'payload', type: 'typee'};
         hostSocket.on(EVENTS.MOVE, (rawMessage: string) => {
             const message: MessageDto = JSON.parse(rawMessage);
-            assert.equal(message.data, messageData);
             assert.equal(message.nick, playerNick);
+            assert.equal(message.payload, messageData.payload);
+            assert.equal(message.type, messageData.type);
             done();
         });
 

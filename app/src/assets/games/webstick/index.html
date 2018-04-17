@@ -9,6 +9,9 @@
   const gmApi = {
     init: ({}) => {
       GameMaker_Init();
+    },
+    message: (msg) => {
+      gmCallback.lines_add(`${msg.nick}: ${msg.payload.content}`);
     }
   };
 
@@ -22,10 +25,11 @@
 
   bindEvent(window, 'message', (event) => {
     if (event.data.gm) {
-      const msg = event.data;
+      const msg = event.data.msg;
+      console.log(msg);
       const apiFunction = gmApi[msg.type];
       if (apiFunction) {
-        apiFunction(msg.data);
+        apiFunction(msg);
       } else {
         console.error(msg.type + ' is not recognized api function. Api contains: ' + Object.keys(gmApi));
       }

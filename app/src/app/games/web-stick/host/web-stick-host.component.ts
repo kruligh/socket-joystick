@@ -23,14 +23,13 @@ export class WebStickHostComponent implements AfterViewInit {
   }
 
   public onMove(msg: ApiMethod): void {
-    console.log('yeah', msg);
+    this.sendMessage(msg);
   }
 
   private sendMessage(msg: ApiMethod): void {
     this.gmIframe.contentWindow.postMessage({
-      data: msg.payload,
       gm: true,
-      type: msg.type,
+      msg,
     }, '*'); // todo proably insecure?
   }
 }

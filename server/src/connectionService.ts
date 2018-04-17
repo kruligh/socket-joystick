@@ -1,7 +1,7 @@
+import {Express} from 'express';
+import * as http from 'http';
+import {Socket} from 'socket.io';
 import socketIO = require('socket.io');
-import {Socket} from "socket.io";
-import {Express} from "express";
-import * as http from "http";
 
 export enum EVENTS {
     MOVE = 'move',
@@ -18,6 +18,18 @@ interface RoomEntry {
     users: User[];
 }
 
+function checkParams(socket: Socket, next: () => void) {
+    const query = socket.handshake.query;
+    const game = query['game'];
+    const roomId = query['roomId'];
+
+    const host = query['host'];
+    const name = query['name'];
+
+    const nick = query['nick'];
+    next();
+}
+
 export class ClientService {
 
     private rooms: Map<string, RoomEntry>;
@@ -29,63 +41,77 @@ export class ClientService {
 
         const io = socketIO(httpServer);
 
-        io.use((socket: Socket, next: Function) => {
-            const roomId = socket.handshake.query['roomId'];
-            const nick = socket.handshake.query['nick'];
-
-            if (!roomId || !nick) {
-                next(new Error(`Handshake query invalid: ${JSON.stringify(socket.handshake.query)}`));
-            } else {
-                console.log(`a user ${nick} try to connect to room ${roomId}`);
-                next();
-            }
-        });
+        io.use(checkParams);
 
         io.on('connection', async (socket) => {
+            const host = socket.handshake.query['host'];
+            const game = socket.handshake.query['game'];
             const roomId = socket.handshake.query['roomId'];
-            const nick = socket.handshake.query['nick'];
             let room = this.rooms.get(roomId);
-            if (!room) {
+            // todo refactor and tests
+            if (host) {
+                const name = socket.handshake.query['name'];
+
+                if (room) {
+                    throw new Error(`Room ${roomId} exists`);
+                }
+
                 room = {
-                    name: nick,
                     host: socket,
+                    name,
                     users: []
                 };
                 this.rooms.set(roomId, room);
-                console.log(`Room ${nick}(${roomId}) created`)
+                console.log(`Room ${name}(${roomId}) created`);
+
             } else {
+                const nick = socket.handshake.query['nick'];
+
+                if (!room) {
+                    // todo make invalid response
+                    throw new Error(`Room ${roomId} does not exists`);
+                }
+
                 room.users = [...room.users, {nick, socket}];
                 console.log(`${nick} successful connected to room ${room.name}(${roomId})`);
-            }
 
-            socket.on(EVENTS.MOVE, (data: string) => {
-                const message: MessageDto = {nick, data};
-                console.log(message);
-                room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
-            });
+                socket.on(EVENTS.MOVE, (data: any) => {
+                    // todo dk check data.payload and data.type
+                    const message: MessageDto = {
+                        nick,
+                        payload: data.payload,
+                        type: data.type,
+                    };
+                    room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
+                });
+            }
         });
 
         io.listen(listenOn);
     }
 
-    getRoom(id: string): RoomDto | {} {
+    public getRoom(id: string): RoomDto | {} {
         const roomEntry = this.rooms.get(id);
         if (!roomEntry) {
             return {};
         }
         return {
             name: roomEntry.name,
-            users: roomEntry.users.reduce((acc: { nick: string }[], item: User) => [...acc, {nick: item.nick}], []),
+            users: roomEntry.users.reduce(
+                (acc: Array<{ nick: string }>, item: User) => [...acc, {nick: item.nick}],
+                []
+            ),
         };
     }
 }
 
 export interface RoomDto {
-    name: string,
-    users: { nick: string }[]
+    name: string;
+    users: Array<{ nick: string }>;
 }
 
 export interface MessageDto {
-    nick: string,
-    data: string
+    nick: string;
+    payload: string;
+    type: string;
 }

@@ -49,39 +49,48 @@ export class GameComponent implements OnInit {
   }
 
   public createHost(): void {
-    // todo connect socket    const nick = 'bede_gral_w_gre_69';
-    //     const hostname = 'najba'; // typed by user - name of room
-    //     const password = 'dupa'; // typed by user - password to room
-    //     const SERVER_URL = 'http://localhost:3000';
-    //     const socket = io(SERVER_URL, {
-    //         query: {roomId, nick},
-    //         reconnection: false, //otherwise its hard to debug
-    //     });
     // todo check params
+    // todo make HostComponent abstract
 
     const socket = io(environment.socket.server, {
-      query: {roomId: this.calculateRoomId(this.hostname, this.password), nick: this.nick},
+      query: {
+        game: 'WebStick',
+        host: true,
+        name: this.hostname,
+        roomId: this.calculateRoomId(this.hostname, this.password),
+      },
       reconnection: environment.socket.host.reconnection,
     });
 
-    this.connected = true;
     this.injectComponent(WebStickHostComponent);
     const hostComponent = this.injectedComponent.instance as WebStickHostComponent;
-    hostComponent.onMove({payload: {content: 'YEAH BUTTON 1a'}, type: 'message'});
+    socket.on('move', (data) => {
+      hostComponent.onMove(JSON.parse(data));
+    });
+
+    socket.on('error', (data) => {
+      console.error('err', data);
+    });
+
+    this.connected = true;
   }
 
   public joinHost(): void {
     const socket = io(environment.socket.server, {
-      query: {roomId: this.calculateRoomId(this.hostname, this.password), nick: this.nick},
+      query: {
+        game: 'WebStick',
+        nick: this.nick,
+        roomId: this.calculateRoomId(this.hostname, this.password),
+      },
       reconnection: environment.socket.client.reconnection,
     });
 
-    this.connected = true;
     this.injectComponent(WebStickClientComponent);
     const clientComponent = this.injectedComponent.instance as WebStickClientComponent;
     clientComponent.onMove.subscribe((data) => {
-      console.log('yeah', data);
+      socket.emit('move', data);
     });
+    this.connected = true;
   }
 
   public disconnectHost() {
