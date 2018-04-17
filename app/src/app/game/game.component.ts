@@ -1,5 +1,7 @@
 import {Component, ComponentFactoryResolver, ComponentRef, OnInit, Type, ViewContainerRef} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import * as io from 'socket.io-client';
+import {environment} from '../../environments/environment';
 import {PARAM_GAME_URL} from '../app-routing.params';
 import {WebStickClientComponent} from '../games/web-stick/client/web-stick-client.component';
 import {WebStickHostComponent} from '../games/web-stick/host/web-stick-host.component';
@@ -47,7 +49,21 @@ export class GameComponent implements OnInit {
   }
 
   public createHost(): void {
-    // todo connect socket
+    // todo connect socket    const nick = 'bede_gral_w_gre_69';
+    //     const hostname = 'najba'; // typed by user - name of room
+    //     const password = 'dupa'; // typed by user - password to room
+    //     const SERVER_URL = 'http://localhost:3000';
+    //     const socket = io(SERVER_URL, {
+    //         query: {roomId, nick},
+    //         reconnection: false, //otherwise its hard to debug
+    //     });
+    // todo check params
+
+    const socket = io(environment.socket.server, {
+      query: {roomId: this.calculateRoomId(this.hostname, this.password), nick: this.nick},
+      reconnection: environment.socket.host.reconnection,
+    });
+
     this.connected = true;
     this.injectComponent(WebStickHostComponent);
     const hostComponent = this.injectedComponent.instance as WebStickHostComponent;
@@ -55,8 +71,11 @@ export class GameComponent implements OnInit {
   }
 
   public joinHost(): void {
-    console.log(this.hostname, this.nick, this.password);
-    // todo connect socket
+    const socket = io(environment.socket.server, {
+      query: {roomId: this.calculateRoomId(this.hostname, this.password), nick: this.nick},
+      reconnection: environment.socket.client.reconnection,
+    });
+
     this.connected = true;
     this.injectComponent(WebStickClientComponent);
     const clientComponent = this.injectedComponent.instance as WebStickClientComponent;
@@ -78,5 +97,9 @@ export class GameComponent implements OnInit {
     const factory = this.componentFactoryResolver.resolveComponentFactory(componentType);
     this.injectedComponent = this.viewContainerRef.createComponent(factory);
     this.injectedComponent.changeDetectorRef.detectChanges();
+  }
+
+  private calculateRoomId(hostname: string, password: string): string {
+    return hostname + password;
   }
 }
