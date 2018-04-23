@@ -1,0 +1,34 @@
+<div class="gm4html5_div_class" id="gm4html5_div_id">
+  <canvas id="canvas" width="992" height="544">
+    <p>Your browser doesn't support HTML5 canvas.</p>
+  </canvas>
+</div>
+<script type="text/javascript" src="resources/WebStick.js"></script>
+
+<script>
+  const gmApi = {
+    init: ({}) => {
+      GameMaker_Init();
+    }
+  };
+
+  function bindEvent(element, eventName, eventHandler) {
+    if (element.addEventListener) {
+      element.addEventListener(eventName, eventHandler, true);
+    } else if (element.attachEvent) {
+      element.attachEvent('on' + eventName, eventHandler);
+    }
+  }
+
+  bindEvent(window, 'message', (event) => {
+    if (event.data.gm) {
+      const msg = event.data;
+      const apiFunction = gmApi[msg.type];
+      if (apiFunction) {
+        apiFunction(msg.data);
+      } else {
+        console.error(msg.type + ' is not recognized api function. Api contains: ' + Object.keys(gmApi));
+      }
+    }
+  });
+</script>

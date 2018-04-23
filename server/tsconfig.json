@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "baseUrl": "..",
+    "strict": true,
+    "noImplicitAny": true,
+    "types": ["chai", "mocha", "node"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "testIntegration/**/*.ts",
+    "types/**/*.ts"
+  ]
+}
