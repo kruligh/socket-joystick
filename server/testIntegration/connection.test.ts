@@ -1,70 +1,96 @@
-import {assert} from "chai";
-import {Socket} from "socket.io";
-import {EVENTS, MessageDto, RoomDto} from "../src/connectionService";
-import {shouldThrow} from "../test/helpers";
-import {promisifyRequest} from "./helpers";
+import {assert} from 'chai';
+import {Socket} from 'socket.io';
+import {HostConnectionQuery, RoomDto} from '../src/connectionService';
+import {shouldThrow} from '../test/helpers';
+import {createRoomId, promisifyRequest} from './helpers';
 
 const io = require('socket.io-client');
-
-const SHA256 = require("crypto-js/sha256");
-
 
 const SERVER_URL = 'http://localhost:3000';
 
 describe('Create room', () => {
-    const hostname = 'yeahbunny room';
-
+    const name = 'yeahbunny room';
+    const game = 'yeahbunny game';
     let roomId: string;
 
     beforeEach(() => {
-        roomId = SHA256(new Date().getMilliseconds() + 'probably its cryptojs a bug but i have to add this').toString();
+        roomId = createRoomId();
     });
 
     it('Should create room', async () => {
         assert.isEmpty(await debugApi.getRoom(roomId));
 
-        const socket = await connect({roomId, nick: hostname});
+        const socket = await createHost({game, roomId, name, host: true});
         assert.isOk(socket);
 
         const roomAfter = await debugApi.getRoom(roomId);
-        assert.equal(roomAfter.name, hostname);
+            console.log(roomAfter);
+        assert.equal(roomAfter.name, name);
+    });
+
+    it('Should throw if room exists', async () => {
+        await createHost({game, roomId, name, host: true});
+
+        await shouldThrow(async () => {
+            await createHost({game, roomId, name, host: true});
+        });
     });
 
     it('Should throw if query without roomId', async () => {
         await shouldThrow(async () => {
-            await connectWithPartialQuery({nick: hostname})
+            await createHostWithPartialQuery({game, name, host: true});
         });
     });
 
-    it('Should throw if query without nick', async () => {
+    it('Should throw if query without name', async () => {
         await shouldThrow(async () => {
-            await connectWithPartialQuery({roomId});
+            await createHostWithPartialQuery({game, roomId, host: true});
+        });
+    });
+
+    it('Should throw if query without game', async () => {
+        await shouldThrow(async () => {
+            await createHostWithPartialQuery({name, roomId, host: true});
+        });
+    });
+
+    it('Should throw if host false', async () => {
+        await shouldThrow(async () => {
+            await createHostWithPartialQuery({game, roomId, name, host: false});
+        });
+    });
+
+    it('Should throw if host undefined', async () => {
+        await shouldThrow(async () => {
+            await createHostWithPartialQuery({game, roomId, name});
         });
     });
 });
+/*
 
 describe('Join to room', () => {
-    const hostname = 'yeahbunny room';
-    const playerNick = 'Alek';
+    const name = 'yeahbunny room';
+    const game = 'yeahbunny game';
+    const nick = 'bede_gral_w_gre_69';
 
-    let roomId: string;
     let hostSocket: Socket;
+    let roomId: string;
 
     beforeEach(async () => {
         roomId = createRoomId();
-        hostSocket = await connect({roomId, nick: hostname});
+        hostSocket = await createHost({roomId, });
         assert.isOk(hostSocket);
     });
 
     it('Should join room', async () => {
         assert.equal((await debugApi.getRoom(roomId)).users.length, 0);
 
-        const playerSocket = await connect({roomId, nick: playerNick});
+        const playerSocket = await connect({roomId, nick: nick});
         assert.isOk(playerSocket);
 
         const roomAfter = await debugApi.getRoom(roomId);
         assert.equal(roomAfter.users.length, 1);
-        assert.isOk(roomAfter.users.find(item => item.nick === playerNick));
+        assert.isOk(roomAfter.users.find(item => item.nick === nick));
     });
 });
 
@@ -97,29 +123,15 @@ describe('Sending message', () => {
         playerSocket.emit(EVENTS.MOVE, messageData);
     });
 });
+*/
 
-function createRoomId(): string {
-    return SHA256(new Date().getMilliseconds() + 'probably its cryptojs a bug but i have to add this').toString();
+function createHost(query: HostConnectionQuery): Promise<Socket> {
+    return createHostWithPartialQuery(query);
 }
 
-interface ConnectionQuery {
-    roomId: string;
-    nick: string;
-}
+function createHostWithPartialQuery(query: Partial<HostConnectionQuery>): Promise<Socket> {
 
-function connect(query: ConnectionQuery): Promise<Socket> {
-    return connectWithPartialQuery(query);
-}
-
-const debugApi = {
-    getRoom: async (id: string): Promise<RoomDto> => {
-        const res = await promisifyRequest('get', `/room/${id}`);
-        return res.body.data as RoomDto;
-    }
-};
-
-function connectWithPartialQuery(query: Partial<ConnectionQuery>): Promise<Socket> {
-    return new Promise(function (resolve: Function, reject: Function) {
+    return new Promise((resolve: (_: any) => void, reject: (_: any) => void) => {
         const socket = io.connect(SERVER_URL, {query});
 
         socket.on('connect', () => {
@@ -131,3 +143,10 @@ function connectWithPartialQuery(query: Partial<ConnectionQuery>): Promise<Socke
         });
     });
 }
+
+const debugApi = {
+    getRoom: async (id: string): Promise<RoomDto> => {
+        const res = await promisifyRequest('get', `/room/${id}`);
+        return res.body.data as RoomDto;
+    }
+};
