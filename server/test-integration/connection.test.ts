@@ -2,11 +2,11 @@ import {assert} from 'chai';
 import {Socket} from 'socket.io';
 import {HostConnectionQuery, RoomDto} from '../src/connectionService';
 import {shouldThrow} from '../test/helpers';
-import {createRoomId, promisifyRequest} from './helpers';
+import {createRoomId, promisifyRequest, SERVER_URL} from './helpers';
 
 const io = require('socket.io-client');
 
-const SERVER_URL = 'http://localhost:3000';
+const sockets: Socket[] = [];
 
 describe('Create room', () => {
     const name = 'yeahbunny room';
@@ -17,6 +17,12 @@ describe('Create room', () => {
         roomId = createRoomId();
     });
 
+    afterEach(() => {
+        sockets.forEach(socket => {
+            socket.disconnect(true);
+        });
+    });
+
     it('Should create room', async () => {
         assert.isEmpty(await debugApi.getRoom(roomId));
 
@@ -24,7 +30,6 @@ describe('Create room', () => {
         assert.isOk(socket);
 
         const roomAfter = await debugApi.getRoom(roomId);
-            console.log(roomAfter);
         assert.equal(roomAfter.name, name);
     });
 
@@ -133,6 +138,8 @@ function createHostWithPartialQuery(query: Partial<HostConnectionQuery>): Promis
 
     return new Promise((resolve: (_: any) => void, reject: (_: any) => void) => {
         const socket = io.connect(SERVER_URL, {query});
+
+        sockets.push(socket);
 
         socket.on('connect', () => {
             resolve(socket);

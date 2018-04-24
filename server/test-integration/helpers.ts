@@ -1,9 +1,12 @@
+import {DEFAULT_PORT} from '../src/utils';
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const SHA256 = require('crypto-js/sha256');
 
-const SERVER_URL = 'http://localhost:3000';
+export const SERVER_URL = 'http://localhost:' + process.env.PORT || DEFAULT_PORT;
+;
 
 export function createRoomId(): string {
     return SHA256(new Date().getMilliseconds() + 'probably its cryptojs a bug but i have to add this').toString();

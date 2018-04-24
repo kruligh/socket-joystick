@@ -26,6 +26,7 @@ function checkHostQueryParams(query: any, next: (_: any) => void) {
     const name = query['name'];
 
     const nick = query['nick'];
+    next(new Error());
 }
 
 // dk todo

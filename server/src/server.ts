@@ -6,11 +6,12 @@ import * as express from 'express';
 import {Express, NextFunction, Request, Response} from 'express';
 import * as http from 'http';
 import {ClientService} from './connectionService';
+import {DEFAULT_PORT} from './utils';
 
 const path = require('path');
 
-// todo move this to parms or env or whatever
-const PORT = 3000;
+const PORT = process.env.PORT || DEFAULT_PORT;
+
 const STATIC_DIR = path.resolve(`${__dirname}/../app`); // path.resolve changes .. to full absolute path
 
 const app: Express = express();
