@@ -39,7 +39,7 @@ export class ClientService {
                 query = this.extractClientQuery(socket.handshake.query);
             }
 
-            for (const key of Object.keys(query)){
+            for (const key of Object.keys(query)) {
                 if (!socket.handshake.query[key]) {
                     this.throwConnection(next, `${key} is not defined in client query`);
                     return;
@@ -95,13 +95,12 @@ export class ClientService {
 
         const room: RoomEntry = this.rooms.get(query.roomId)!;
         if (!room) {
-            this.throwConnection(next, `Room ${query.roomId.substr(0,8)} does not exists`);
+            this.throwConnection(next, `Room ${query.roomId.substr(0, 8)} does not exists`);
             return;
         }
 
-        console.log(room.users, room.users.find(user => user.nick === query.nick));
         if (room.users.find(user => user.nick === query.nick)) {
-            this.throwConnection(next, `User ${query.nick} exists in room ${query.roomId.substr(0,8)}`);
+            this.throwConnection(next, `User ${query.nick} exists in room ${query.roomId.substr(0, 8)}`);
             return;
         }
 
@@ -115,7 +114,7 @@ export class ClientService {
                 type: data.type,
             };
 
-            for (const key of Object.keys(message)){
+            for (const key of Object.keys(message)) {
                 if (!(message as any)[key]) {
                     const errorMsg = `${key} is not defined in message ${JSON.stringify(message)}`;
                     console.error(errorMsg);
@@ -127,7 +126,7 @@ export class ClientService {
             room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
         });
 
-        console.log(`${query.nick} successfully connected to room ${room.name}(${query.roomId.substr(0,8)})`);
+        console.log(`${query.nick} successfully connected to room ${room.name}(${query.roomId.substr(0, 8)})`);
         next();
     }
 

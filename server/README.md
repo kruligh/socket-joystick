@@ -2,21 +2,23 @@
 
 Simple node application
 - handles multiple clients connected by sockets with shared host.
-- serves statics
 
 ## run application
 ```
-yarn install
-npm run dev
+npm install
+npm start
+```
+
+To run on specified port:
+```
+env PORT=port npm start
 ```
 
 ## run tests
 
-### integration
-in one terminal run application as above
-
-in second terminal
 ```
-npm run test:integration
+npm test
 ```
-After that you have to kill test task (ctrl c), it will be improved.
+Script runs server and tests. After all should kill server process.
+Server output should be in file test-integration.log. Tests output in console. 
+If port set in scripts/test.script.ts is in use, server fails quiet.

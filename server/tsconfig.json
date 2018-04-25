@@ -6,7 +6,11 @@
     "baseUrl": "..",
     "strict": true,
     "noImplicitAny": true,
-    "types": ["chai", "mocha", "node"]
+    "types": [
+      "chai",
+      "mocha",
+      "node"
+    ]
   },
   "include": [
     "src/**/*.ts",

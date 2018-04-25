@@ -1,5 +1,3 @@
-import serveStatic = require('serve-static');
-
 require('console-stamp')(console, '[HH:MM:ss.l]');
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
@@ -37,18 +35,3 @@ app.get('/room/:roomId', (req: Request, res: Response, next: () => void) => {
     });
     next();
 });
-
-// ----------------- serve statics explicit
-app.get('', (req, res) => {
-    res.sendFile(`${STATIC_DIR}/index.html`);
-});
-
-app.get('/host', (req, res) => {
-    res.sendFile(`${STATIC_DIR}/host.html`);
-});
-
-app.get('/client', (req, res) => {
-    res.sendFile(`${STATIC_DIR}/client.html`);
-});
-
-app.use('/resource', serveStatic(`${STATIC_DIR}/resource`));
