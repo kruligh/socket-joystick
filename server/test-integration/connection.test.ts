@@ -1,8 +1,8 @@
 import {assert} from 'chai';
-import {Socket} from 'socket.io';
-import {HostConnectionQuery, RoomDto} from '../src/connectionService';
+import {ClientConnectionQuery, EVENTS, HostConnectionQuery, MessageDto, RoomDto} from '../src/connectionService';
 import {shouldThrow} from '../test/helpers';
 import {createRoomId, promisifyRequest, SERVER_URL} from './helpers';
+import {Socket} from 'socket.io';
 
 const io = require('socket.io-client');
 
@@ -71,55 +71,96 @@ describe('Create room', () => {
         });
     });
 });
-/*
 
 describe('Join to room', () => {
+    const nick = 'bede_gral_w_gre_69';
     const name = 'yeahbunny room';
     const game = 'yeahbunny game';
-    const nick = 'bede_gral_w_gre_69';
 
-    let hostSocket: Socket;
     let roomId: string;
+    let hostSocket: Socket;
 
     beforeEach(async () => {
         roomId = createRoomId();
-        hostSocket = await createHost({roomId, });
-        assert.isOk(hostSocket);
+        hostSocket = await createHost({game, roomId, name, host: true});
+    });
+
+    afterEach(() => {
+        sockets.forEach(socket => {
+            socket.disconnect(true);
+        });
     });
 
     it('Should join room', async () => {
         assert.equal((await debugApi.getRoom(roomId)).users.length, 0);
 
-        const playerSocket = await connect({roomId, nick: nick});
+        const playerSocket = await connect({game, roomId, nick});
         assert.isOk(playerSocket);
 
         const roomAfter = await debugApi.getRoom(roomId);
         assert.equal(roomAfter.users.length, 1);
         assert.isOk(roomAfter.users.find(item => item.nick === nick));
     });
+
+    it('Should throw if room does not exist', async () => {
+        await shouldThrow(async () => {
+            await connect({game, roomId: 'fakeroomID', nick});
+        });
+    });
+
+    it('Should throw if nick exists in room', async () => {
+        await connect({game, roomId, nick});
+
+        await shouldThrow(async () => {
+            await connect({game, roomId, nick});
+        });
+    });
+
+    it('Should throw if query without roomId', async () => {
+        await shouldThrow(async () => {
+            await connectWithPartialQuery({game, nick});
+        });
+    });
+
+    it('Should throw if query without nick', async () => {
+        await shouldThrow(async () => {
+            await connectWithPartialQuery({game, roomId});
+        });
+    });
+
+    it('Should throw if query without game', async () => {
+        await shouldThrow(async () => {
+            await connectWithPartialQuery({roomId, nick});
+        });
+    });
+
 });
 
 describe('Sending message', () => {
-    const hostname = 'yeahbunny room';
-    const playerNick = 'Alek';
+    const nick = 'bede_gral_w_gre_69';
+    const name = 'yeahbunny room';
+    const game = 'yeahbunny game';
 
+    let roomId: string;
     let hostSocket: Socket;
     let playerSocket: Socket;
-    let roomId: string;
 
     beforeEach(async () => {
         roomId = createRoomId();
-        hostSocket = await connect({roomId, nick: hostname});
-        assert.isOk(hostSocket);
-        playerSocket = await connect({roomId, nick: playerNick});
-        assert.isOk(playerSocket);
+        hostSocket = await createHost({game, roomId, name, host: true});
+        playerSocket = await connect({game, roomId, nick});
+    });
+
+    afterEach(() => {
+        sockets.forEach(socket => {
+            socket.disconnect(true);
+        });
     });
 
     it('Should send message to host', (done) => {
         const messageData = {payload: 'payload', type: 'typee'};
         hostSocket.on(EVENTS.MOVE, (rawMessage: string) => {
             const message: MessageDto = JSON.parse(rawMessage);
-            assert.equal(message.nick, playerNick);
             assert.equal(message.payload, messageData.payload);
             assert.equal(message.type, messageData.type);
             done();
@@ -127,15 +168,54 @@ describe('Sending message', () => {
 
         playerSocket.emit(EVENTS.MOVE, messageData);
     });
+
+    it('Should decorate message by nick', (done) => {
+        const messageData = {payload: 'payload', type: 'typee'};
+        hostSocket.on(EVENTS.MOVE, (rawMessage: string) => {
+            const message: MessageDto = JSON.parse(rawMessage);
+            assert.equal(message.nick, nick);
+            done();
+        });
+
+        playerSocket.emit(EVENTS.MOVE, messageData);
+    });
+
+    it('Should throw if message without type', (done) => {
+        const messageData = {payload: 'payload'};
+        playerSocket.on(EVENTS.ERROR, (err: any) => {
+            done();
+        });
+
+        playerSocket.emit(EVENTS.MOVE, messageData);
+    });
+
+    it('Should throw if message without payload', (done) => {
+        const messageData = {type: 'typee'};
+        playerSocket.on(EVENTS.ERROR, (err: any) => {
+            done();
+        });
+
+        playerSocket.emit(EVENTS.MOVE, messageData);
+    });
 });
-*/
 
 function createHost(query: HostConnectionQuery): Promise<Socket> {
     return createHostWithPartialQuery(query);
 }
 
 function createHostWithPartialQuery(query: Partial<HostConnectionQuery>): Promise<Socket> {
+    return connectWithQuery(query);
+}
 
+function connect(query: ClientConnectionQuery): Promise<Socket> {
+    return connectWithPartialQuery(query);
+}
+
+function connectWithPartialQuery(query: Partial<ClientConnectionQuery>): Promise<Socket> {
+    return connectWithQuery(query);
+}
+
+function connectWithQuery(query: any): Promise<Socket> {
     return new Promise((resolve: (_: any) => void, reject: (_: any) => void) => {
         const socket = io.connect(SERVER_URL, {query});
 
