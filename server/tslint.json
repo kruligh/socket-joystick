@@ -30,7 +30,8 @@
     "max-classes-per-file": [
       false
     ],
-    "no-string-literal": false
+    "no-string-literal": false,
+    "no-var-requires": false
   },
   "rulesDirectory": []
 }

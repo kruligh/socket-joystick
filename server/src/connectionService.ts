@@ -1,9 +1,10 @@
-import {Express} from 'express';
+import {Express, NextFunction} from 'express';
 import * as http from 'http';
 import {Socket} from 'socket.io';
 import socketIO = require('socket.io');
 
 export enum EVENTS {
+    ERROR = 'app_error',
     MOVE = 'move',
 }
 
@@ -18,18 +19,6 @@ interface RoomEntry {
     users: User[];
 }
 
-function checkParams(socket: Socket, next: () => void) {
-    const query = socket.handshake.query;
-    const game = query['game'];
-    const roomId = query['roomId'];
-
-    const host = query['host'];
-    const name = query['name'];
-
-    const nick = query['nick'];
-    next();
-}
-
 export class ClientService {
 
     private rooms: Map<string, RoomEntry>;
@@ -41,49 +30,26 @@ export class ClientService {
 
         const io = socketIO(httpServer);
 
-        io.use(checkParams);
-
-        io.on('connection', async (socket) => {
+        io.use((socket, next) => {
             const host = socket.handshake.query['host'];
-            const game = socket.handshake.query['game'];
-            const roomId = socket.handshake.query['roomId'];
-            let room = this.rooms.get(roomId);
-            // todo refactor and tests
+            let query: ConnectionQuery;
             if (host) {
-                const name = socket.handshake.query['name'];
-
-                if (room) {
-                    throw new Error(`Room ${roomId} exists`);
-                }
-
-                room = {
-                    host: socket,
-                    name,
-                    users: []
-                };
-                this.rooms.set(roomId, room);
-                console.log(`Room ${name}(${roomId}) created`);
-
+                query = this.extractHostQuery(socket.handshake.query);
             } else {
-                const nick = socket.handshake.query['nick'];
+                query = this.extractClientQuery(socket.handshake.query);
+            }
 
-                if (!room) {
-                    // todo make invalid response
-                    throw new Error(`Room ${roomId} does not exists`);
+            for (const key of Object.keys(query)) {
+                if (!socket.handshake.query[key]) {
+                    this.throwConnection(next, `${key} is not defined in client query`);
+                    return;
                 }
+            }
 
-                room.users = [...room.users, {nick, socket}];
-                console.log(`${nick} successful connected to room ${room.name}(${roomId})`);
-
-                socket.on(EVENTS.MOVE, (data: any) => {
-                    // todo dk check data.payload and data.type
-                    const message: MessageDto = {
-                        nick,
-                        payload: data.payload,
-                        type: data.type,
-                    };
-                    room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
-                });
+            if (host == 'true') {
+                this.createRoom(socket, next);
+            } else {
+                this.joinRoom(socket, next);
             }
         });
 
@@ -103,6 +69,88 @@ export class ClientService {
             ),
         };
     }
+
+    private createRoom(socket: Socket, next: NextFunction) {
+        const query = this.extractHostQuery(socket.handshake.query);
+
+        if (this.rooms.get(query.roomId)) {
+            this.throwConnection(next, `Room ${query.roomId} exists`);
+            return;
+        }
+
+        const room: RoomEntry = {
+            host: socket,
+            name: query.name,
+            users: []
+        };
+        this.rooms.set(query.roomId, room);
+
+        console.log(`Room ${query.name}(${query.roomId}) created`);
+        next();
+    }
+
+    private joinRoom(socket: Socket, next: NextFunction) {
+        const query = this.extractClientQuery(socket.handshake.query);
+
+
+        const room: RoomEntry = this.rooms.get(query.roomId)!;
+        if (!room) {
+            this.throwConnection(next, `Room ${query.roomId.substr(0, 8)} does not exists`);
+            return;
+        }
+
+        if (room.users.find(user => user.nick === query.nick)) {
+            this.throwConnection(next, `User ${query.nick} exists in room ${query.roomId.substr(0, 8)}`);
+            return;
+        }
+
+        room.users = [...room.users, {nick: query.nick, socket}];
+
+        socket.on(EVENTS.MOVE, (data: any) => {
+            // todo dk check data.payload and data.type
+            const message: MessageDto = {
+                nick: query.nick,
+                payload: data.payload,
+                type: data.type,
+            };
+
+            for (const key of Object.keys(message)) {
+                if (!(message as any)[key]) {
+                    const errorMsg = `${key} is not defined in message ${JSON.stringify(message)}`;
+                    console.error(errorMsg);
+                    socket.emit(EVENTS.ERROR, {errorMsg});
+                    return;
+                }
+            }
+
+            room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
+        });
+
+        console.log(`${query.nick} successfully connected to room ${room.name}(${query.roomId.substr(0, 8)})`);
+        next();
+    }
+
+    private extractHostQuery(query: any): HostConnectionQuery {
+        return {
+            game: query['game'],
+            host: query['host'],
+            name: query['name'],
+            roomId: query['roomId'],
+        };
+    }
+
+    private extractClientQuery(query: any): ClientConnectionQuery {
+        return {
+            game: query['game'],
+            nick: query['nick'],
+            roomId: query['roomId'],
+        };
+    }
+
+    private throwConnection(next: NextFunction, msg: string) {
+        console.error(msg);
+        next(new Error(msg));
+    }
 }
 
 export interface RoomDto {
@@ -114,4 +162,18 @@ export interface MessageDto {
     nick: string;
     payload: string;
     type: string;
+}
+
+interface ConnectionQuery {
+    game: string;
+    roomId: string;
+}
+
+export interface HostConnectionQuery extends ConnectionQuery {
+    host: boolean;
+    name: string;
+}
+
+export interface ClientConnectionQuery extends ConnectionQuery {
+    nick: string;
 }

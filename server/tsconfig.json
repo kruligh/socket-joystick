@@ -6,12 +6,17 @@
     "baseUrl": "..",
     "strict": true,
     "noImplicitAny": true,
-    "types": ["chai", "mocha", "node"]
+    "types": [
+      "chai",
+      "mocha",
+      "node"
+    ]
   },
   "include": [
     "src/**/*.ts",
+    "scripts/*.ts",
     "test/**/*.ts",
-    "testIntegration/**/*.ts",
+    "test-integration/**/*.ts",
     "types/**/*.ts"
   ]
 }
