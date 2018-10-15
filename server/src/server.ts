@@ -26,7 +26,8 @@ const httpServer: http.Server = app.listen(PORT, () => {
 });
 
 // ----------------- serve socket server and api
-const clientService = new ClientService(app, httpServer);
+const clientService = new ClientService();
+clientService.init(app, httpServer);
 
 app.get('/room/:roomId', (req: Request, res: Response, next: () => void) => {
     res.status(200).json({

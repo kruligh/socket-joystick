@@ -4,6 +4,7 @@ import {Socket} from 'socket.io';
 import socketIO = require('socket.io');
 
 export enum EVENTS {
+    DISCONNECT = 'disconnect',
     ERROR = 'app_error',
     MOVE = 'move',
 }
@@ -23,35 +24,15 @@ export class ClientService {
 
     private rooms: Map<string, RoomEntry>;
 
-    constructor(app: Express, listenOn: http.Server) {
+    constructor() {
         this.rooms = new Map<string, RoomEntry>();
+    }
 
+    public init(app: Express, listenOn: http.Server){
         const httpServer = new http.Server(app);
-
         const io = socketIO(httpServer);
 
-        io.use((socket, next) => {
-            const host = socket.handshake.query['host'];
-            let query: ConnectionQuery;
-            if (host) {
-                query = this.extractHostQuery(socket.handshake.query);
-            } else {
-                query = this.extractClientQuery(socket.handshake.query);
-            }
-
-            for (const key of Object.keys(query)) {
-                if (!socket.handshake.query[key]) {
-                    this.throwConnection(next, `${key} is not defined in client query`);
-                    return;
-                }
-            }
-
-            if (host == 'true') {
-                this.createRoom(socket, next);
-            } else {
-                this.joinRoom(socket, next);
-            }
-        });
+        io.use(this.handleConnection);
 
         io.listen(listenOn);
     }
@@ -70,13 +51,48 @@ export class ClientService {
         };
     }
 
-    private createRoom(socket: Socket, next: NextFunction) {
-        const query = this.extractHostQuery(socket.handshake.query);
+    private handleConnection = (socket: Socket, next: NextFunction) => {
+        const host = socket.handshake.query['host'];
+        let query: ConnectionQuery;
+        if (host == 'true') {
+            query = ClientService.extractHostQuery(socket.handshake.query);
+        } else {
+            query = ClientService.extractClientQuery(socket.handshake.query);
+        }
+
+        for (const key of Object.keys(query)) {
+            if (!socket.handshake.query[key]) {
+                ClientService.throwConnection(next, `${key} is not defined in client query`);
+                return;
+            }
+        }
+
+        if (host == 'true') {
+            this.createRoom(socket, next);
+        } else {
+            this.joinRoom(socket, next);
+        }
+    };
+
+    private createRoom = (socket: Socket, next: NextFunction) => {
+        const query = ClientService.extractHostQuery(socket.handshake.query);
 
         if (this.rooms.get(query.roomId)) {
-            this.throwConnection(next, `Room ${query.roomId} exists`);
+            ClientService.throwConnection(next, `Room ${query.roomId} exists`);
             return;
         }
+
+        socket.on(EVENTS.DISCONNECT, () => {
+            const room = this.rooms.get(query.roomId);
+            if (room) {
+                room.users.forEach((user) => {
+                    user.socket.disconnect(true);
+                });
+                this.rooms.delete(query.roomId);
+
+                console.log(`Room ${query.name}(${query.roomId}) closed by host`);
+            }
+        });
 
         const room: RoomEntry = {
             host: socket,
@@ -87,27 +103,26 @@ export class ClientService {
 
         console.log(`Room ${query.name}(${query.roomId}) created`);
         next();
-    }
+    };
 
-    private joinRoom(socket: Socket, next: NextFunction) {
-        const query = this.extractClientQuery(socket.handshake.query);
-
+    private joinRoom = (socket: Socket, next: NextFunction) => {
+        const query = ClientService.extractClientQuery(socket.handshake.query);
 
         const room: RoomEntry = this.rooms.get(query.roomId)!;
         if (!room) {
-            this.throwConnection(next, `Room ${query.roomId.substr(0, 8)} does not exists`);
+            ClientService.throwConnection(next, `Room ${query.roomId} does not exists`);
             return;
         }
 
         if (room.users.find(user => user.nick === query.nick)) {
-            this.throwConnection(next, `User ${query.nick} exists in room ${query.roomId.substr(0, 8)}`);
+            ClientService.throwConnection(next, `User ${query.nick} exists in room ${query.roomId}`);
             return;
         }
 
-        room.users = [...room.users, {nick: query.nick, socket}];
+        const user: User = {nick: query.nick, socket};
+        room.users = [...room.users, user];
 
         socket.on(EVENTS.MOVE, (data: any) => {
-            // todo dk check data.payload and data.type
             const message: MessageDto = {
                 nick: query.nick,
                 payload: data.payload,
@@ -126,11 +141,16 @@ export class ClientService {
             room!.host.emit(EVENTS.MOVE, JSON.stringify(message));
         });
 
-        console.log(`${query.nick} successfully connected to room ${room.name}(${query.roomId.substr(0, 8)})`);
-        next();
-    }
+        socket.on(EVENTS.DISCONNECT, () => {
+            room.users = room.users.filter(roomUser => roomUser.nick !== user.nick);
+            console.log(`${query.nick} disconnected with room ${room.name}(${query.roomId})`);
+        });
 
-    private extractHostQuery(query: any): HostConnectionQuery {
+        console.log(`${query.nick} successfully connected to room ${room.name}(${query.roomId})`);
+        next();
+    };
+
+    private static extractHostQuery(query: any): HostConnectionQuery {
         return {
             game: query['game'],
             host: query['host'],
@@ -139,7 +159,7 @@ export class ClientService {
         };
     }
 
-    private extractClientQuery(query: any): ClientConnectionQuery {
+    private static extractClientQuery(query: any): ClientConnectionQuery {
         return {
             game: query['game'],
             nick: query['nick'],
@@ -147,7 +167,7 @@ export class ClientService {
         };
     }
 
-    private throwConnection(next: NextFunction, msg: string) {
+    private static throwConnection(next: NextFunction, msg: string) {
         console.error(msg);
         next(new Error(msg));
     }

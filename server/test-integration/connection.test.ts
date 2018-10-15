@@ -8,7 +8,7 @@ const io = require('socket.io-client');
 
 const sockets: Socket[] = [];
 
-describe('Create room', () => {
+describe('Host', () => {
     const name = 'yeahbunny room';
     const game = 'yeahbunny game';
     let roomId: string;
@@ -31,14 +31,6 @@ describe('Create room', () => {
 
         const roomAfter = await debugApi.getRoom(roomId);
         assert.equal(roomAfter.name, name);
-    });
-
-    it('Should throw if room exists', async () => {
-        await createHost({game, roomId, name, host: true});
-
-        await shouldThrow(async () => {
-            await createHost({game, roomId, name, host: true});
-        });
     });
 
     it('Should throw if query without roomId', async () => {
@@ -70,9 +62,34 @@ describe('Create room', () => {
             await createHostWithPartialQuery({game, roomId, name});
         });
     });
+
+    context('Room created', () => {
+        let hostSocket: Socket;
+
+        beforeEach(async () => {
+            hostSocket = await createHost({game, roomId, name, host: true});
+        });
+
+        it('Should remove room when disconnect', (done) => {
+            hostSocket.on(EVENTS.DISCONNECT, () => {
+                debugApi.getRoom(roomId).then((room) => {
+                    assert.isEmpty(room);
+                    done();
+                });
+            });
+
+            hostSocket.disconnect(true);
+        });
+
+        it('Should throw cause room exists', async () => {
+            await shouldThrow(async () => {
+                await createHost({game, roomId, name, host: true});
+            });
+        });
+    });
 });
 
-describe('Join to room', () => {
+describe('Client', () => {
     const nick = 'bede_gral_w_gre_69';
     const name = 'yeahbunny room';
     const game = 'yeahbunny game';
@@ -80,60 +97,87 @@ describe('Join to room', () => {
     let roomId: string;
     let hostSocket: Socket;
 
-    beforeEach(async () => {
-        roomId = createRoomId();
-        hostSocket = await createHost({game, roomId, name, host: true});
-    });
-
-    afterEach(() => {
-        sockets.forEach(socket => {
-            socket.disconnect(true);
-        });
-    });
-
-    it('Should join room', async () => {
-        assert.equal((await debugApi.getRoom(roomId)).users.length, 0);
-
-        const playerSocket = await connect({game, roomId, nick});
-        assert.isOk(playerSocket);
-
-        const roomAfter = await debugApi.getRoom(roomId);
-        assert.equal(roomAfter.users.length, 1);
-        assert.isOk(roomAfter.users.find(item => item.nick === nick));
-    });
-
     it('Should throw if room does not exist', async () => {
-        await shouldThrow(async () => {
-            await connect({game, roomId: 'fakeroomID', nick});
-        });
-    });
-
-    it('Should throw if nick exists in room', async () => {
-        await connect({game, roomId, nick});
-
         await shouldThrow(async () => {
             await connect({game, roomId, nick});
         });
     });
 
-    it('Should throw if query without roomId', async () => {
-        await shouldThrow(async () => {
-            await connectWithPartialQuery({game, nick});
+    context('Room created', () => {
+        beforeEach(async () => {
+            roomId = createRoomId();
+            hostSocket = await createHost({game, roomId, name, host: true});
+        });
+
+        afterEach(() => {
+            sockets.forEach(socket => {
+                socket.disconnect(true);
+            });
+        });
+
+        it('Should join room', async () => {
+            assert.deepEqual((await debugApi.getRoom(roomId)).users, []);
+
+            const playerSocket = await connect({game, roomId, nick});
+            assert.isOk(playerSocket);
+
+            const roomAfter = await debugApi.getRoom(roomId);
+            assert.deepEqual(roomAfter.users, [{nick}]);
+        });
+
+        it('Should throw if nick exists in room', async () => {
+            await connect({game, roomId, nick});
+
+            await shouldThrow(async () => {
+                await connect({game, roomId, nick});
+            });
+        });
+
+        it('Should throw if query without roomId', async () => {
+            await shouldThrow(async () => {
+                await connectWithPartialQuery({game, nick});
+            });
+        });
+
+        it('Should throw if query without nick', async () => {
+            await shouldThrow(async () => {
+                await connectWithPartialQuery({game, roomId});
+            });
+        });
+
+        it('Should throw if query without game', async () => {
+            await shouldThrow(async () => {
+                await connectWithPartialQuery({roomId, nick});
+            });
+        });
+
+        context('Connected to room', () => {
+            let playerSocket: Socket;
+
+            beforeEach(async () => {
+                playerSocket = await connect({game, roomId, nick});
+            });
+
+            it('Should disconnect when host closed', (done) => {
+                playerSocket.on(EVENTS.DISCONNECT, () => {
+                    done();
+                });
+
+                hostSocket.disconnect(true);
+            });
+
+            it('Should remove user when disconnect', (done) => {
+                playerSocket.on(EVENTS.DISCONNECT, () => {
+                    debugApi.getRoom(roomId).then(room => {
+                        assert.deepEqual(room.users, []);
+                        done();
+                    });
+                });
+
+                playerSocket.disconnect(true);
+            });
         });
     });
-
-    it('Should throw if query without nick', async () => {
-        await shouldThrow(async () => {
-            await connectWithPartialQuery({game, roomId});
-        });
-    });
-
-    it('Should throw if query without game', async () => {
-        await shouldThrow(async () => {
-            await connectWithPartialQuery({roomId, nick});
-        });
-    });
-
 });
 
 describe('Sending message', () => {
